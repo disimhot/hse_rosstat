@@ -25,9 +25,13 @@ st.sidebar.info(
 )
 
 with st.sidebar:
-    options = st.multiselect("Выберите вид экономической деятельности", ["Образование", "Производство одежды"],
+    options = st.multiselect("Выберите вид экономической деятельности", ["Образование", "Производство одежды",
+                                                                         'Производство одежды_с инфляцией',
+                                                                         'Образование_с инфляцией'],
                              default=["Образование", "Производство одежды"])
-    selected = st.radio("Прирост по виду экономической деятельности", ["Образование", "Производство одежды"])
+    selected = st.radio("Прирост по виду экономической деятельности", ["Образование", "Производство одежды",
+                                                                       'Производство одежды_с инфляцией',
+                                                                       'Образование_с инфляцией'])
 
 # pressed = st.button("Train")
 df.head()
@@ -36,15 +40,11 @@ st.subheader('График зарплат по видам экономическ
 if len(options) > 0:
     fig = plt.figure(figsize=(8, 5))
     sns.set_palette(['cyan', 'red'])
-    if len(options) == 1:
-        ax = sns.lineplot(x='Год', y=options[0], data=df)
-    else:
-        s = pd.melt(df[["Образование", "Производство одежды", 'Год']], ['Год'])
-        s.rename(columns={'value': 'Виды деятельности'}, inplace=True)
-        ax = sns.lineplot(x='Год', y='Виды деятельности', hue='variable', data=s)
-        plt.legend(title='Виды деятельности', loc='upper left', labels=["Образование", "Производство одежды"])
-        ax.set_ylabel('Заработная плата')
-
+    s = pd.melt(df[options + ['Год']], ['Год'])
+    s.rename(columns={'value': 'Виды деятельности'}, inplace=True)
+    ax = sns.lineplot(x='Год', y='Виды деятельности', hue='variable', data=s)
+    plt.legend(title='Виды деятельности', loc='upper left', labels=options)
+    ax.set_ylabel('Заработная плата')
     st.pyplot(fig)
 
 st.subheader('Посмотрим на график инфляции в %')
@@ -52,7 +52,7 @@ fig1 = plt.figure(figsize=(8, 5))
 ax = sns.lineplot(x='Год', y='Инфляция', data=df)
 st.pyplot(fig1)
 
-st.subheader('Посмотрим на прирост средней заработной платы в сравнении с инфляцией')
+st.subheader('Посмотрим на прирост средней заработной платы по сравнению с предыдущим годом')
 
 if selected == 'Образование':
     temp = df[1:]
